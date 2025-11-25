@@ -1,20 +1,16 @@
-# Base44 App
+# BikeSegura Frontend
 
+Vite + React + Tailwind + TypeScript. Agora o app consome a API/BFF Flask em `VITE_API_URL` (veja `.env.example`).
 
-This app was created automatically by Base44.
-It's a Vite+React app that communicates with the Base44 API.
-
-## Running the app
-
+## Rodar
 ```bash
+cd Front
 npm install
+cp .env.example .env # ajuste a URL da API se necessário
 npm run dev
 ```
 
-## Building the app
-
+## Build
 ```bash
 npm run build
 ```
-
-For more information and support, please contact Base44 support at app@base44.com.

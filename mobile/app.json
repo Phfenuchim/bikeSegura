@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "BikeSegura",
+    "slug": "bikesegura",
+    "scheme": "bikesegura",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "jsEngine": "hermes",
+    "platforms": ["android", "ios"],
+    "extra": {
+      "API_URL": "http://192.168.88.249:8000"
+    }
+  }
+}
