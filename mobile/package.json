@@ -2,7 +2,7 @@
   "name": "bikesegura-mobile",
   "version": "0.0.1",
   "private": true,
-  "main": "index.js",
+  "main": "index.tsx",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",

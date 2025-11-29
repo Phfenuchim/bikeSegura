@@ -40,6 +40,8 @@ export type RouteData = {
   end_lat: number;
   end_lng: number;
   distance_km?: number;
+  traffic_score?: number;
+  elevation_gain?: number;
 };
 
 export const api = {
@@ -52,9 +54,28 @@ export const api = {
   createIncident: (payload: IncidentPayload) =>
     httpClient.post("/api/v1/incidents", payload),
   routes: () => httpClient.get<RouteData[]>("/api/v1/routes"),
+  routesSearch: (q: string) =>
+    httpClient.get<RouteData[]>(`/api/v1/routes/search?q=${encodeURIComponent(q)}`),
+  routesRank: (prefs: { avoidIncidents?: boolean; lowTraffic?: boolean; lowElevation?: boolean }) => {
+    const params = new URLSearchParams();
+    if (prefs.avoidIncidents) params.append("avoid_incidents", "1");
+    if (prefs.lowTraffic) params.append("low_traffic", "1");
+    if (prefs.lowElevation) params.append("low_elevation", "1");
+    return httpClient.get<RouteData[]>(`/api/v1/routes/rank?${params.toString()}`);
+  },
+  saveRoute: (routeId: number, save: boolean) =>
+    httpClient.post(`/api/v1/routes/${routeId}/save`, { save }),
+  savedRoutes: () => httpClient.get<RouteData[]>("/api/v1/routes/saved"),
+  shareRoute: (routeId: number, note?: string) =>
+    httpClient.post(`/api/v1/routes/${routeId}/share`, { note }),
+  setWaypoints: (routeId: number, waypoints: { latitude: number; longitude: number; name?: string }[]) =>
+    httpClient.post(`/api/v1/routes/${routeId}/waypoints`, { waypoints }),
+  listWaypoints: (routeId: number) =>
+    httpClient.get(`/api/v1/routes/${routeId}/waypoints`),
   sos: () => httpClient.get("/api/v1/sos"),
   createSOS: (payload: SOSPayload) => httpClient.post("/api/v1/sos", payload),
   mapSummary: () => httpClient.get("/bff/v1/map/summary"),
+  sharedRoutes: () => httpClient.get("/bff/v1/map/summary"),
   home: () => httpClient.get("/bff/v1/home"),
   feedList: () => httpClient.get<FeedPost[]>("/api/v1/feed"),
   feedCreate: (content: string) => httpClient.post<FeedPost>("/api/v1/feed", { content }),

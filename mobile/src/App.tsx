@@ -6,12 +6,15 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import Home from "./Home";
 import Login from "./Login";
 import { setAuthToken } from "./api/httpClient";
 import MapScreen from "./Map";
-import FeedScreen from "./Feed";
 import ProfileScreen from "./Profile";
+import FeedScreen from "./Feed";
+import RoutesScreen from "./Routes";
+import { RouteSelectionProvider } from "./RouteSelectionContext";
 
 const queryClient = new QueryClient();
 const Stack = createNativeStackNavigator();
@@ -24,23 +27,43 @@ function MainTabs({ onLogout }: { onLogout: () => void }) {
         headerShown: false,
         tabBarActiveTintColor: "#2563eb",
         tabBarInactiveTintColor: "#0f172a",
+        tabBarStyle: { paddingBottom: 6, height: 58, padding: "5%"  },
+        padding: "5%",
       }}
     >
-      <Tab.Screen name="Mapa" options={{ tabBarLabel: "Mapa" }}>
-        {(props) => <MapScreen onLogout={onLogout} />}
+      <Tab.Screen
+        name="Mapa"
+        options={{
+          tabBarLabel: "Mapa",
+          tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" size={size} color={color} />,
+        }}
+      >
+        {() => <MapScreen onLogout={onLogout} />}
       </Tab.Screen>
       <Tab.Screen
-        name="Feed"
-        options={{ tabBarLabel: "Feed" }}
+        name="Rotas"
+        options={{
+          tabBarLabel: "Rotas",
+          tabBarIcon: ({ color, size }) => <Ionicons name="navigate-outline" size={size} color={color} />,
+        }}
+      >
+        {() => <RoutesScreen />}
+      </Tab.Screen>
+      <Tab.Screen
+        name="Comunidade"
+        options={{
+          tabBarLabel: "Comunidade",
+          tabBarIcon: ({ color, size }) => <Ionicons name="people-outline" size={size} color={color} />,
+        }}
       >
         {() => <FeedScreen />}
       </Tab.Screen>
-      <Tab.Screen name="Resumo" options={{ tabBarLabel: "Resumo" }}>
-        {({ navigation }) => <Home onLogout={onLogout} goToMap={() => navigation.navigate("Mapa")} />}
-      </Tab.Screen>
       <Tab.Screen
         name="Perfil"
-        options={{ tabBarLabel: "Perfil" }}
+        options={{
+          tabBarLabel: "Perfil",
+          tabBarIcon: ({ color, size }) => <Ionicons name="person-circle-outline" size={size} color={color} />,
+        }}
       >
         {() => <ProfileScreen onLogout={onLogout} />}
       </Tab.Screen>
@@ -77,24 +100,26 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <StatusBar style="dark" />
-        {loading ? null : (
-          <NavigationContainer>
-            {token ? (
-              <Stack.Navigator screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="Main">
-                  {() => <MainTabs onLogout={handleLogout} />}
-                </Stack.Screen>
-              </Stack.Navigator>
-            ) : (
-              <Stack.Navigator screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="Login">
-                  {() => <Login onLogin={handleLogin} />}
-                </Stack.Screen>
-              </Stack.Navigator>
-            )}
-          </NavigationContainer>
-        )}
+        <RouteSelectionProvider>
+          <StatusBar style="dark" />
+          {loading ? null : (
+            <NavigationContainer>
+              {token ? (
+                <Stack.Navigator screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="Main">
+                    {() => <MainTabs onLogout={handleLogout} />}
+                  </Stack.Screen>
+                </Stack.Navigator>
+              ) : (
+                <Stack.Navigator screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="Login">
+                    {() => <Login onLogin={handleLogin} />}
+                  </Stack.Screen>
+                </Stack.Navigator>
+              )}
+            </NavigationContainer>
+          )}
+        </RouteSelectionProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   );

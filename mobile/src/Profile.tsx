@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Image } from "react-native";
 import { useEffect, useState } from "react";
 import { api } from "./api/client";
 
@@ -40,34 +40,56 @@ export default function Profile({ onLogout }: Props) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0b1220" }}>
       <View style={styles.container}>
-        <Text style={styles.title}>Perfil</Text>
+        <Text style={styles.title}>Seu perfil</Text>
         {isLoading && <Text style={styles.muted}>Carregando...</Text>}
+
         {user && (
           <View style={styles.card}>
-            <Text style={styles.label}>Nome</Text>
-            <TextInput style={styles.input} value={fullName} onChangeText={setFullName} />
+            <View style={styles.headerRow}>
+              {avatarUrl.trim() ? (
+                <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+              ) : (
+                <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                  <Text style={styles.avatarInitial}>
+                    {fullName ? fullName[0]?.toUpperCase() : user.email?.[0]?.toUpperCase() || "?"}
+                  </Text>
+                </View>
+              )}
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={styles.value}>{fullName || "Sem nome"}</Text>
+                <Text style={styles.muted}>{user.email}</Text>
+              </View>
+            </View>
 
-            <Text style={styles.label}>Email</Text>
-            <Text style={styles.value}>{user.email}</Text>
+            <Text style={styles.label}>Nome</Text>
+            <TextInput style={styles.input} value={fullName} onChangeText={setFullName} placeholder="Seu nome" />
 
             <Text style={styles.label}>Bio</Text>
             <TextInput
-              style={[styles.input, { height: 80 }]}
+              style={[styles.input, { height: 90 }]}
               value={bio}
               onChangeText={setBio}
               multiline
+              placeholder="Conte um pouco sobre voc��"
             />
 
             <Text style={styles.label}>Avatar URL</Text>
-            <TextInput style={styles.input} value={avatarUrl} onChangeText={setAvatarUrl} />
+            <TextInput
+              style={styles.input}
+              value={avatarUrl}
+              onChangeText={setAvatarUrl}
+              placeholder="https://..."
+              autoCapitalize="none"
+            />
 
             <TouchableOpacity style={styles.save} onPress={handleSave} disabled={updateMutation.isPending}>
               <Text style={styles.saveText}>{updateMutation.isPending ? "Salvando..." : "Salvar"}</Text>
             </TouchableOpacity>
           </View>
         )}
+
         <TouchableOpacity style={styles.logout} onPress={onLogout}>
           <Text style={styles.logoutText}>Sair</Text>
         </TouchableOpacity>
@@ -78,33 +100,39 @@ export default function Profile({ onLogout }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 12 },
-  title: { fontSize: 24, fontWeight: "700", color: "#0f172a" },
+  title: { fontSize: 24, fontWeight: "700", color: "#e2e8f0" },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 12,
-    gap: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  label: { color: "#94a3b8", fontSize: 12 },
-  value: { color: "#0f172a", fontSize: 16, fontWeight: "600" },
-  input: {
-    backgroundColor: "#f8fafc",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    backgroundColor: "#0f172a",
+    borderRadius: 14,
+    padding: 14,
+    gap: 6,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
-    color: "#0f172a",
+    borderColor: "rgba(226,232,240,0.15)",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  headerRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 6 },
+  avatar: { width: 56, height: 56, borderRadius: 12, backgroundColor: "#1e293b" },
+  avatarPlaceholder: { alignItems: "center", justifyContent: "center" },
+  avatarInitial: { color: "#e2e8f0", fontWeight: "800", fontSize: 18 },
+  label: { color: "#94a3b8", fontSize: 12, marginTop: 6 },
+  value: { color: "#e2e8f0", fontSize: 16, fontWeight: "700" },
+  input: {
+    backgroundColor: "#0b1220",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: "rgba(226,232,240,0.2)",
+    color: "#e2e8f0",
   },
   logout: {
     marginTop: 12,
     backgroundColor: "#ef4444",
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: "center",
   },
   logoutText: { color: "#fff", fontWeight: "700" },
@@ -112,8 +140,8 @@ const styles = StyleSheet.create({
   save: {
     marginTop: 12,
     backgroundColor: "#2563eb",
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 12,
+    borderRadius: 10,
     alignItems: "center",
   },
   saveText: { color: "#fff", fontWeight: "700" },
