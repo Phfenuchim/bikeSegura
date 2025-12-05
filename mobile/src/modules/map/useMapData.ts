@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../api/client";
 
-export type Incident = { id: number; latitude: number; longitude: number; severity: string; title: string; description?: string };
-export type SOS = { id: number; latitude: number; longitude: number; status: string; message?: string };
+export type Incident = { id: number; latitude: number; longitude: number; severity: string; title: string; description?: string; type?: string };
+export type SOS = { id: number; latitude: number; longitude: number; status: string; message?: string; type?: string };
 export type SupportPoint = { id: number; latitude: number; longitude: number; type?: string; name?: string; description?: string };
 export type Route = { id: number; start_lat: number; start_lng: number; end_lat: number; end_lng: number; name: string };
 
@@ -20,8 +20,8 @@ export function useMapData() {
   });
 
   const supportPoints: SupportPoint[] = useMemo(() => mapSummary?.support_points || [], [mapSummary]);
-  const incidentsList = mapSummary?.incidents || incidents;
-  const sosList = mapSummary?.sos || sosAlerts;
+  const incidentsList: Incident[] = mapSummary?.incidents || incidents || [];
+  const sosList: SOS[] = mapSummary?.sos || sosAlerts || [];
 
   const refreshData = () => {
     queryClient.invalidateQueries({ queryKey: ["incidents"] });

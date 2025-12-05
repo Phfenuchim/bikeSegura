@@ -13,11 +13,11 @@ def list_sos():
 
 
 @sos_bp.post("/sos")
-@jwt_required(optional=True)
 def create_sos():
     payload = request.get_json() or {}
     try:
-        alert = service.create_alert(payload, user_id=get_jwt_identity())
+        # For now, create without user association (user_id=None)
+        alert = service.create_alert(payload, user_id=None)
     except ValueError as err:
         return jsonify({"error": str(err)}), 400
     return jsonify(_serialize_alert(alert)), 201
@@ -44,6 +44,7 @@ def _serialize_alert(alert):
         "longitude": alert.longitude,
         "status": alert.status,
         "message": alert.message,
+        "type": alert.type,
         "user_id": alert.user_id,
         "created_at": alert.created_at.isoformat(),
     }

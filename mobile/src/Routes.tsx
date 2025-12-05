@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "./api/client";
 import { useRouteSelection } from "./RouteSelectionContext";
+import { useSavedRoutes } from "./modules/routes/useSavedRoutes";
 
 type RouteData = {
   id: number;
@@ -17,20 +18,13 @@ type RouteData = {
 };
 
 export default function RoutesScreen() {
-  const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
   const [search, setSearch] = useState("");
-  const queryClient = useQueryClient();
   const { setRoute } = useRouteSelection();
+  const { savedRoutes, toggleSave, shareRoute, refetchSavedRoutes } = useSavedRoutes();
 
   const { data: routes = [], isLoading, refetch } = useQuery<RouteData[]>({
     queryKey: ["routes-list"],
     queryFn: () => api.routes(),
-  });
-
-  const { data: savedServer = [] } = useQuery<RouteData[]>({
-    queryKey: ["routes-saved"],
-    queryFn: () => api.savedRoutes(),
-    staleTime: 1000 * 30,
   });
 
   const { data: searchResults = [] } = useQuery<RouteData[]>({
@@ -39,48 +33,13 @@ export default function RoutesScreen() {
     enabled: search.trim().length > 1,
   });
 
-  const publishMutation = useMutation({
-    mutationFn: (payload: { id: number; name: string }) => api.shareRoute(payload.id, payload.name),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
-      Alert.alert("Ok", "Rota compartilhada na comunidade");
-    },
-    onError: (err: any) => Alert.alert("Erro", err.message || "Nao foi possivel publicar a rota"),
-  });
-
-  const saveMutation = useMutation({
-    mutationFn: (payload: { id: number; save: boolean }) => api.saveRoute(payload.id, payload.save),
-    onSuccess: (_, variables) => {
-      setSavedIds((prev) => {
-        const next = new Set(prev);
-        if (variables.save) next.add(variables.id);
-        else next.delete(variables.id);
-        return next;
-      });
-      queryClient.invalidateQueries({ queryKey: ["routes-saved"] });
-    },
-    onError: (err: any) => Alert.alert("Erro", err.message || "Falha ao salvar rota"),
-  });
-
-  const baseSaved = useMemo(() => new Set(savedServer.map((r) => r.id)), [savedServer]);
-  const savedMerged = useMemo(() => {
-    const merged = new Set<number>([...baseSaved, ...savedIds]);
-    return merged;
-  }, [baseSaved, savedIds]);
-
+  const savedSet = useMemo(() => new Set(savedRoutes.map((r: RouteData) => r.id)), [savedRoutes]);
   const savedList = useMemo(
-    () => routes.filter((r) => savedMerged.has(r.id)).concat(savedServer.filter((r) => !routes.find((rr) => rr.id == r.id && savedMerged.has(rr.id)))),
-    [routes, savedServer, savedMerged]
+    () => routes.filter((r) => savedSet.has(r.id)).concat(savedRoutes.filter((r: RouteData) => !routes.find((rr) => rr.id === r.id))),
+    [routes, savedRoutes, savedSet]
   );
 
   const displayedRoutes = search.trim().length > 1 ? searchResults : routes;
-
-  const toggleSave = (id: number) => {
-    const isSaved = savedMerged.has(id);
-    saveMutation.mutate({ id, save: !isSaved });
-  };
-
-  const handlePublish = (r: RouteData) => publishMutation.mutate({ id: r.id, name: r.name || "Rota" });
 
   const handleNavigate = (r: RouteData) => {
     setRoute(r);
@@ -95,7 +54,7 @@ export default function RoutesScreen() {
             <Text style={styles.title}>Rotas</Text>
             <Text style={styles.subtitle}>Salve, publique e use rotas da comunidade.</Text>
           </View>
-          <TouchableOpacity style={styles.refresh} onPress={() => refetch()}>
+          <TouchableOpacity style={styles.refresh} onPress={() => { refetch(); refetchSavedRoutes(); }}>
             <Text style={styles.refreshText}>Atualizar</Text>
           </TouchableOpacity>
         </View>
@@ -121,7 +80,7 @@ export default function RoutesScreen() {
                   <TouchableOpacity onPress={() => handleNavigate(r)}>
                     <Text style={styles.link}>Navegar</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handlePublish(r)} disabled={publishMutation.isPending}>
+                  <TouchableOpacity onPress={() => shareRoute(r.id, r.name)} >
                     <Text style={styles.link}>Publicar</Text>
                   </TouchableOpacity>
                 </View>
@@ -144,17 +103,13 @@ export default function RoutesScreen() {
               Distancia: {r.distance_km ? `${r.distance_km.toFixed(1)} km` : "--"}
             </Text>
             <View style={styles.actions}>
-              <TouchableOpacity style={styles.secondaryButton} onPress={() => toggleSave(r.id)}>
-                <Text style={styles.secondaryText}>{savedIds.has(r.id) ? "Remover" : "Salvar"}</Text>
+              <TouchableOpacity style={styles.secondaryButton} onPress={() => toggleSave(r.id, !savedSet.has(r.id))}>
+                <Text style={styles.secondaryText}>{savedSet.has(r.id) ? "Remover" : "Salvar"}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.secondaryButton} onPress={() => handleNavigate(r)}>
                 <Text style={styles.secondaryText}>Navegar</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.primaryButton, publishMutation.isPending && { opacity: 0.6 }]}
-                onPress={() => handlePublish(r)}
-                disabled={publishMutation.isPending}
-              >
+              <TouchableOpacity style={styles.primaryButton} onPress={() => shareRoute(r.id, r.name)}>
                 <Text style={styles.primaryText}>Publicar</Text>
               </TouchableOpacity>
             </View>

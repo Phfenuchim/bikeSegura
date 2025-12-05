@@ -21,6 +21,7 @@ class IncidentService:
             latitude=payload["latitude"],
             longitude=payload["longitude"],
             severity=payload.get("severity", "info"),
+            type=payload.get("type"),
             user_id=user_id,
         )
         return incident

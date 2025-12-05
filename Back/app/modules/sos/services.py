@@ -19,6 +19,7 @@ class SOSService:
             longitude=payload["longitude"],
             status=payload.get("status", "open"),
             message=payload.get("message"),
+            type=payload.get("type"),
             user_id=user_id,
         )
         return alert

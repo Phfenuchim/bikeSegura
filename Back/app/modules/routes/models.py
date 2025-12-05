@@ -13,6 +13,9 @@ class Route(db.Model):
     end_lat = db.Column(db.Float, nullable=False)
     end_lng = db.Column(db.Float, nullable=False)
     distance_km = db.Column(db.Float, nullable=True)
+    duration_seconds = db.Column(db.Integer, nullable=True)  # tempo estimado em segundos
+    geometry = db.Column(db.JSON, nullable=True)  # coordenadas da polyline
+    steps = db.Column(db.JSON, nullable=True)  # instruções turn-by-turn
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     traffic_score = db.Column(db.Float, nullable=True)  # menor = melhor

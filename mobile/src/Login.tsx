@@ -6,7 +6,8 @@ type Props = {
   onLogin: (token: string) => void;
 };
 
-export default function Login({ onLogin }: Props) {
+export default function Login(props: Props & { navigation: any }) {
+  const { onLogin } = props;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,6 +52,10 @@ export default function Login({ onLogin }: Props) {
       <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? "Entrando..." : "Entrar"}</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.linkButton} onPress={() => (props as any).navigation.navigate("Register")}>
+        <Text style={styles.linkText}>Não tem conta? Crie uma</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -75,4 +80,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   buttonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
+  linkButton: { alignItems: "center", marginTop: 16 },
+  linkText: { color: "#059669", fontWeight: "600" },
 });

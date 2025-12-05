@@ -13,11 +13,11 @@ def list_incidents():
 
 
 @incidents_bp.post("/incidents")
-@jwt_required(optional=True)
 def create_incident():
     payload = request.get_json() or {}
     try:
-        incident = service.create_incident(payload, user_id=get_jwt_identity())
+        # For now, create without user association (user_id=None)
+        incident = service.create_incident(payload, user_id=None)
     except ValueError as err:
         return jsonify({"error": str(err)}), 400
     return jsonify(_serialize_incident(incident)), 201
@@ -45,6 +45,7 @@ def _serialize_incident(incident):
         "latitude": incident.latitude,
         "longitude": incident.longitude,
         "severity": incident.severity,
+        "type": incident.type,
         "created_at": incident.created_at.isoformat(),
         "user_id": incident.user_id,
     }

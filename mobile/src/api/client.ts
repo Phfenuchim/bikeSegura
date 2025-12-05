@@ -22,6 +22,7 @@ export type IncidentPayload = {
   latitude: number;
   longitude: number;
   severity?: string;
+  type?: string;
 };
 
 export type SOSPayload = {
@@ -29,6 +30,15 @@ export type SOSPayload = {
   longitude: number;
   message?: string;
   status?: string;
+  type?: string;
+};
+
+export type SupportPointPayload = {
+  name?: string;
+  type: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
 };
 
 export type RouteData = {
@@ -44,9 +54,19 @@ export type RouteData = {
   elevation_gain?: number;
 };
 
+export type RouteCreatePayload = {
+  name?: string;
+  start_lat: number;
+  start_lng: number;
+  end_lat: number;
+  end_lng: number;
+};
+
 export const api = {
   login: (email: string, password: string) =>
     httpClient.post<LoginResponse>("/api/v1/auth/login", { email, password }),
+  register: (email: string, password: string, full_name: string) =>
+    httpClient.post<LoginResponse>("/api/v1/auth/register", { email, password, full_name }),
   me: () => httpClient.get<UserProfile>("/api/v1/auth/me"),
   updateProfile: (payload: Partial<UserProfile>) =>
     httpClient.patch<UserProfile>("/api/v1/auth/me", payload),
@@ -56,6 +76,7 @@ export const api = {
   routes: () => httpClient.get<RouteData[]>("/api/v1/routes"),
   routesSearch: (q: string) =>
     httpClient.get<RouteData[]>(`/api/v1/routes/search?q=${encodeURIComponent(q)}`),
+  createRoute: (payload: RouteCreatePayload) => httpClient.post<RouteData>("/api/v1/routes", payload),
   routesRank: (prefs: { avoidIncidents?: boolean; lowTraffic?: boolean; lowElevation?: boolean }) => {
     const params = new URLSearchParams();
     if (prefs.avoidIncidents) params.append("avoid_incidents", "1");
@@ -79,4 +100,6 @@ export const api = {
   home: () => httpClient.get("/bff/v1/home"),
   feedList: () => httpClient.get<FeedPost[]>("/api/v1/feed"),
   feedCreate: (content: string) => httpClient.post<FeedPost>("/api/v1/feed", { content }),
+  supportPoints: () => httpClient.get("/api/v1/support-points"),
+  createSupportPoint: (payload: SupportPointPayload) => httpClient.post("/api/v1/support-points", payload),
 };

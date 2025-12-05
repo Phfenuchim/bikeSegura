@@ -49,6 +49,12 @@ class RouteService:
         required = ("name", "start_lat", "start_lng", "end_lat", "end_lng")
         if not all(k in payload and payload[k] is not None for k in required):
             raise ValueError("name, start_lat, start_lng, end_lat, end_lng are required")
+        
+        # Convert distance from meters to km if provided
+        distance_km = payload.get("distance_km")
+        if "totalDistance" in payload and not distance_km:
+            distance_km = payload["totalDistance"] / 1000.0  # Convert meters to km
+        
         route = self.repo.create(
             name=payload["name"],
             description=payload.get("description"),
@@ -56,7 +62,10 @@ class RouteService:
             start_lng=payload["start_lng"],
             end_lat=payload["end_lat"],
             end_lng=payload["end_lng"],
-            distance_km=payload.get("distance_km"),
+            distance_km=distance_km,
+            duration_seconds=payload.get("totalDuration"),
+            geometry=payload.get("geometry"),  # Array of coordinates
+            steps=payload.get("steps"),  # Array of turn-by-turn instructions
             user_id=user_id,
         )
         return route

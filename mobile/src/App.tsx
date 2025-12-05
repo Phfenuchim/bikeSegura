@@ -9,10 +9,11 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Home from "./Home";
 import Login from "./Login";
+import Register from "./Register";
 import { setAuthToken } from "./api/httpClient";
 import MapScreen from "./Map";
 import ProfileScreen from "./Profile";
-import FeedScreen from "./Feed";
+import { ComunidadeScreen } from "./ComunidadeScreen";
 import RoutesScreen from "./Routes";
 import { RouteSelectionProvider } from "./RouteSelectionContext";
 
@@ -27,8 +28,7 @@ function MainTabs({ onLogout }: { onLogout: () => void }) {
         headerShown: false,
         tabBarActiveTintColor: "#2563eb",
         tabBarInactiveTintColor: "#0f172a",
-        tabBarStyle: { paddingBottom: 6, height: 58, padding: "5%"  },
-        padding: "5%",
+        tabBarStyle: { paddingBottom: 6, height: 58, padding: "5%" },
       }}
     >
       <Tab.Screen
@@ -56,7 +56,7 @@ function MainTabs({ onLogout }: { onLogout: () => void }) {
           tabBarIcon: ({ color, size }) => <Ionicons name="people-outline" size={size} color={color} />,
         }}
       >
-        {() => <FeedScreen />}
+        {() => <ComunidadeScreen />}
       </Tab.Screen>
       <Tab.Screen
         name="Perfil"
@@ -113,7 +113,10 @@ export default function App() {
               ) : (
                 <Stack.Navigator screenOptions={{ headerShown: false }}>
                   <Stack.Screen name="Login">
-                    {() => <Login onLogin={handleLogin} />}
+                    {(props) => <Login {...props} onLogin={handleLogin} />}
+                  </Stack.Screen>
+                  <Stack.Screen name="Register">
+                    {(props) => <Register {...props} onLogin={handleLogin} />}
                   </Stack.Screen>
                 </Stack.Navigator>
               )}

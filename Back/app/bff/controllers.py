@@ -3,7 +3,9 @@ from ..modules.incidents.services import IncidentService
 from ..modules.routes.services import RouteService
 from ..modules.sos.services import SOSService
 from ..modules.feed.services import FeedService
+from ..modules.feed.services import FeedService
 from ..modules.events.services import EventService
+from ..modules.support_points.services import SupportPointService
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 bff_bp = Blueprint("bff", __name__)
@@ -12,18 +14,31 @@ route_service = RouteService()
 sos_service = SOSService()
 feed_service = FeedService()
 event_service = EventService()
+support_point_service = SupportPointService()
 
 
 @bff_bp.get("/map/summary")
 def map_summary():
-    summary = incident_service.summarize()
+    incidents = incident_service.list_incidents()
     routes = route_service.list_routes()
     sos = sos_service.list_alerts()
     events = event_service.list_events()
     shared = route_service.repo.list_shared_recent(limit=10)
+    support_points = support_point_service.list_points()
     return jsonify(
         {
-            "incidents": summary,
+            "incidents": [
+                {
+                    "id": inc.id,
+                    "title": inc.title,
+                    "description": inc.description,
+                    "severity": inc.severity,
+                    "latitude": inc.latitude,
+                    "longitude": inc.longitude,
+                    "type": inc.type,
+                }
+                for inc in incidents[:20]
+            ],
             "routes": [
                 {
                     "id": r.id,
@@ -49,9 +64,13 @@ def map_summary():
                 for sh in shared
             ],
             "sos": [
-                {"id": a.id, "lat": a.latitude, "lng": a.longitude, "status": a.status}
-                for a in sos[:5]
+                {"id": a.id, "latitude": a.latitude, "longitude": a.longitude, "status": a.status, "type": a.type, "message": a.message}
+                for a in sos[:20]
             ],
+            "support_points": [
+                {"id": sp.id, "name": sp.name, "type": sp.type, "latitude": sp.latitude, "longitude": sp.longitude, "description": sp.description}
+                for sp in support_points
+            ]
         }
     )
 

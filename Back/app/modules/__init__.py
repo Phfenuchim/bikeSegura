@@ -4,6 +4,7 @@ from .routes.controllers import routes_bp
 from .sos.controllers import sos_bp
 from .feed.controllers import feed_bp
 from .events.controllers import events_bp
+from .support_points.controllers import support_points_bp
 from ..bff.controllers import bff_bp
 
 
@@ -14,6 +15,7 @@ def register_blueprints(app):
     app.register_blueprint(sos_bp, url_prefix="/api/v1")
     app.register_blueprint(feed_bp, url_prefix="/api/v1")
     app.register_blueprint(events_bp, url_prefix="/api/v1")
+    app.register_blueprint(support_points_bp, url_prefix="/api/v1")
     app.register_blueprint(bff_bp, url_prefix="/bff/v1")
 
 
@@ -25,5 +27,6 @@ def load_models():
     from .sos import models as _sos_models  # noqa: F401
     from .feed import models as _feed_models  # noqa: F401
     from .events import models as _events_models  # noqa: F401
+    from .support_points import models as _support_points_models  # noqa: F401
 
-    return [_users_models, _incidents_models, _routes_models, _sos_models, _feed_models, _events_models]
+    return [_users_models, _incidents_models, _routes_models, _sos_models, _feed_models, _events_models, _support_points_models]
